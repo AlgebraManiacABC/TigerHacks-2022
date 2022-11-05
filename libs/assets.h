@@ -1,0 +1,1 @@
+#define MENU_BG "imgs/menu.png"
