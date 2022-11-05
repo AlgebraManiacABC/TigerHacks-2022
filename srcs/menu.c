@@ -250,7 +250,7 @@ void present_main_options
     SDL_RenderCopy(r, cont, NULL, &box_cont);
 
 
-    //Test to find out clickable regions
+    /*Test to find out clickable regions
     static int print = 0;
     if(!print)
     {
@@ -263,6 +263,6 @@ void present_main_options
         printf("box_cont: [%d,%d] x [%d,%d] (%d x %d px)\n",
             box_cont.x,box_cont.x+box_cont.w,box_cont.y,box_cont.y+box_cont.h,box_cont.w,box_cont.h);
         print++;
-    }
+    }*/
     
 }
