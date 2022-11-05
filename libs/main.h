@@ -2,6 +2,7 @@
 #include <gSDL.h>
 #include <time.h>
 #include <math.h>
+#include <string.h>
 #include "assets.h"
 
 #define MAIN_MENU_ERROR    -1

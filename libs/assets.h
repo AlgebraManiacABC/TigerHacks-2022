@@ -1,4 +1,4 @@
-#define MENU_BG "imgs/main_image_star-forming_region_carina_nircam_final-5mb.jpg"
+#define MENU_BG "imgs/menu.jpg"
 #define SURVIVAL_BG "imgs/survival.png"
 #define ENEMY "imgs/enemy.png"
 #define DEBRIS_1 "imgs/steel_beam.png"

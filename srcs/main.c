@@ -19,7 +19,26 @@ int main(int argc, char ** argv)
 		return EXIT_FAILURE;
 	}
 	printf("Initialization successful!\n");
-	//gSDL_MaximizeWindow(&w,&r,"Space TigerHacks 2022");
+	gSDL_MaximizeWindow(&w,&r,"Space TigerHacks 2022");
+
+	SDL_RenderClear(r);
+    SDL_RenderPresent(r);
+    int next = summon_main_menu(w,r);
+    switch(next)
+    {
+        case MAIN_MENU_ERROR:
+            fprintf(stderr,"An unknown error occurred in the main menu! Quitting...\n");
+            break;
+        case START_NEW:
+            break;
+        case START_CONTINUE:
+            break;
+        case MAIN_MENU_OPTIONS:
+            break;
+        case MAIN_MENU_QUIT:
+			return -1;
+            break;
+    }
 
 	int ww,wh;
 	SDL_GetWindowSize(w,&ww,&wh);

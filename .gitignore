@@ -1,3 +1,4 @@
 build
 hack*
 .vscode
+*.dll
