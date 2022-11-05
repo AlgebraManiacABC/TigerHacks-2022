@@ -2,11 +2,8 @@ NAME=hack
 
 CC=gcc
 CFLAGS=-Wall -Werror -std=c17 -Ilibs
-MKDIRFLAGS=$@
 ifeq ($(OS),Windows_NT)
 	CFLAGS += -lSDL2main -lSDL2
-else
-	MKDIRFLAGS:=-p $(MKDIRFLAGS)
 endif
 
 LIB_DIR=libs
@@ -25,10 +22,10 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(LIBS) | $(OBJ_DIR)
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 $(OBJ_DIR):
-	mkdir $(MKDIRFLAGS)
+	mkdir $(OBJ_DIR)
 
 .PHONY: clean
 
 clean:
-	rm -rf $(OBJ_DIR)
-	rm -rf $(NAME)
+	$(RM) -r $(OBJ_DIR)
+	$(RM) $(NAME)
