@@ -1,8 +1,6 @@
 #include "main.h"
 #include "assets.h"
 
-#define FPS 30.0	//	Frames per second
-
 #define COOLDOWN_TIME 120	//	The default cooldown time
 
 #define MAX_ENEMIES 10	//	The maximum number of enemies that can be spawned
