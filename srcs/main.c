@@ -11,6 +11,7 @@ int main(int argc, char ** argv)
 		fprintf(stderr,"Error initializing SDL: %s\n",SDL_GetError());
 		return EXIT_FAILURE;
 	}
+	TTF_Init();
 	printf("Initialization successful!\n");
 	//gSDL_MaximizeWindow(&w,&r,"Space TigerHacks 2022");
 
@@ -25,5 +26,6 @@ int main(int argc, char ** argv)
 	SDL_DestroyTexture(shipIMG.tx);
 
 	gSDL_Close(LEVEL_REND,r,w);
+	TTF_Quit();
 	return EXIT_SUCCESS;
 }

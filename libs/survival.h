@@ -67,7 +67,7 @@ typedef struct
 }	outerSpace;
 
 
-void survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship);
+int survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship);
 
 //	Could pass the difficulty to these functions to determine danger level
 //	Try to increase danger of hazard and shorten wait between next hazard, but not too extreme of both

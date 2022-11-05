@@ -3,18 +3,18 @@
 //	Need: Difficulty, Countdown time
 //	Difficulty determines how dangerous hazards like asteroids and enemies are
 
-void survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship)
+int survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship)
 {
 	time_t timeRemaining = COOLDOWN_TIME;
 	time_t time0 = time(NULL);
 
 	TTF_Font *font = TTF_OpenFont(ROBOTO,72);
-	SDL_Color colorWhite = {255,255,255,255};
-	CreateSolidTextureFromText(r,font,"Test",colorWhite);
 
 	int ww,wh;
 	SDL_GetWindowSize(w,&ww,&wh);
-	printf("Window size: [%d, %d]\n",ww,wh);
+	gIMG bg = CreateImgFromFile(r,SURVIVAL_BG);
+	gIMG_Resize(&bg,ww,wh);
+
 	ship.rotation = 270;
 	ship.x = ww/2;
 	ship.y = wh/2;
@@ -33,14 +33,14 @@ void survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship)
 			switch(event.type)
 			{
 				case SDL_QUIT:
-					return;
+					return EXIT_SUCCESS;
 				case SDL_WINDOWEVENT:
 					switch(event.window.event)
 					{
 						case SDL_WINDOWEVENT_RESIZED:
 							ww = event.window.data1;
 							wh = event.window.data2;
-							printf("New windows size detected: [%d, %d]\n", ww, wh);
+							gIMG_Resize(&bg,ww,wh);
 							break;
 					}
 				case SDL_KEYDOWN:
@@ -127,14 +127,22 @@ void survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship)
 		ship.rect.y = ship.y - ship.rect.h/2;
 
 		timeRemaining = COOLDOWN_TIME - (time(NULL) - time0);
+		if(timeRemaining == 0.0)
+		{
+			//jump to warp
+			return EXIT_SUCCESS;
+		}
 
 		SDL_RenderClear(r);
+		gIMG_RenderCopy(r,&bg);
 		renderShip(r,ww,wh,ship);
-		renderCooldown(r, ww, wh, timeRemaining,font);
+		renderCooldown(r, ww, wh, timeRemaining, font);
+		//printf("Remaining: %ld:%02ld\n",timeRemaining/60,timeRemaining%60);
 		SDL_RenderPresent(r);
 
 		SDL_Delay(1000 / FPS);
 	}
+	return EXIT_FAILURE;
 }
 
 //	Render functions
@@ -164,4 +172,18 @@ void renderShip(SDL_Renderer *r, int ww, int wh, spaceShip ship)
 
 void renderCooldown(SDL_Renderer *r, int ww, int wh, time_t remaining, TTF_Font *font)
 {
+	SDL_Color white = {255,255,255,255};
+	char buffer[32]={0};
+	snprintf(buffer,32,"%01ld:%02ld",remaining/60,remaining%60);
+	SDL_Texture *timer = CreateSolidTextureFromText(r,font,buffer,white);
+	if(!timer)
+	{
+		fprintf(stderr,"Timer texture null! [%s]\n",SDL_GetError());
+		return;
+	}
+	SDL_Rect rect = {0,0,0,0};
+	SDL_QueryTexture(timer,NULL,NULL,&rect.w,&rect.h);
+	rect.x = (ww/2) - (rect.w/2);
+	rect.y = 10;
+	SDL_RenderCopy(r,timer,NULL,&rect);
 }
