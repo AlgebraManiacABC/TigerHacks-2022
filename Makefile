@@ -2,6 +2,9 @@ NAME=hack
 
 CC=gcc
 CFLAGS=-Wall -Werror -std=c17 -Ilibs
+ifeq ($(OS),Windows_NT)
+	CFLAGS += -lSDL2main -lSDL2
+endif
 
 LIB_DIR=libs
 SRC_DIR=srcs
