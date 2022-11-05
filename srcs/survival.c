@@ -55,6 +55,9 @@ int survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship)
 						case SDL_SCANCODE_D:
 							rotating_right = true;
 							break;
+						case SDL_SCANCODE_ESCAPE:
+							survive = false;
+							break;
 						default:
 							break;
 					}
