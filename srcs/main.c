@@ -1,5 +1,6 @@
 #include "main.h"
 #include "survival.h"
+#include "warp.h"
 
 int main(int argc, char ** argv)
 {
@@ -11,10 +12,17 @@ int main(int argc, char ** argv)
 		fprintf(stderr,"Error initializing SDL: %s\n",SDL_GetError());
 		return EXIT_FAILURE;
 	}
-	TTF_Init();
+	if(TTF_Init())
+	{
+		fprintf(stderr,"Error initializing TTF: %s\n",TTF_GetError());
+		return EXIT_FAILURE;
+	}
 	printf("Initialization successful!\n");
-	//gSDL_MaximizeWindow(&w,&r,"Space TigerHacks 2022");
+	gSDL_MaximizeWindow(&w,&r,"Space TigerHacks 2022");
 
+	int ww,wh;
+	SDL_GetWindowSize(w,&ww,&wh);
+	warp(r,ww,wh);
 	spaceShip ship;
 	gIMG shipIMG = CreateImgFromFile(r,PLAYER);
 	gIMG_Resize(&shipIMG,100,100);

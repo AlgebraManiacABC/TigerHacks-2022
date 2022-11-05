@@ -174,7 +174,7 @@ void renderCooldown(SDL_Renderer *r, int ww, int wh, time_t remaining, TTF_Font 
 {
 	SDL_Color white = {255,255,255,255};
 	char buffer[32]={0};
-	snprintf(buffer,32,"%01ld:%02ld",remaining/60,remaining%60);
+	snprintf(buffer,32,"%01ld:%02ld",(long int)remaining/60,(long int)remaining%60);
 	SDL_Texture *timer = CreateSolidTextureFromText(r,font,buffer,white);
 	if(!timer)
 	{
