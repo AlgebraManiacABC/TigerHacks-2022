@@ -1,7 +1,7 @@
 NAME=hack
 
 CC=gcc
-CFLAGS=-Wall -Werror -std=gnu17 -Ilibs -lgSDL -lm
+CFLAGS=-Wall -Werror -std=gnu17 -Ilibs -lm -lgSDL
 ifeq ($(OS),Windows_NT)
 	CFLAGS += -lmingw32 -llibSDL2_image
 else
