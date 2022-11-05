@@ -25,7 +25,7 @@ int summon_main_menu(SDL_Window *w, SDL_Renderer *r)
     SDL_Rect menu_bg = {0, 0, 0, 0};
     SDL_QueryTexture(menu_bg_img, NULL, NULL, &menu_bg.w, &menu_bg.h);
 
-    TTF_Font *font72 = TTF_OpenFont(MENUFONT, 72);
+    TTF_Font *font72 = TTF_OpenFont(MENUFONT, 150);
     if(!font72)
     {
         fprintf(stderr,"Font creation failure: %s\n",SDL_GetError());
@@ -94,7 +94,7 @@ int summon_main_menu(SDL_Window *w, SDL_Renderer *r)
         Uint32 hover;
 
         selection = evaluateClicks(&hover, state, click_up, click_down, *width, *height);
-        selection = MAIN_MENU_ERROR;
+        
         if (selection == START_NEW)
             state = STATE_START;
 
@@ -120,10 +120,10 @@ int summon_main_menu(SDL_Window *w, SDL_Renderer *r)
     }
     free(txt_menu);
     //Free audio
-    return START_NEW;
-
     free(width);
     free(height);
+
+    return selection;
 }
 
 int evaluateClicks(Uint32 * hover, int state, bool click_up, bool click_down, int w, int h)
@@ -158,7 +158,7 @@ int evaluateClicks(Uint32 * hover, int state, bool click_up, bool click_down, in
             if(click_down)
                 click_held = MASK_OPTIONS;
             if(click_up && (click_held&MASK_OPTIONS))
-                selection = MAIN_MENU_OPTIONS;
+                selection = MAIN_MENU_ERROR;
         }
         else if(mouse_over_quit(x,y, w, h))
         {
@@ -178,44 +178,44 @@ int evaluateClicks(Uint32 * hover, int state, bool click_up, bool click_down, in
 
 bool mouse_over_quit(int x, int y, int w, int h)
 {
-    int start_w = 108;
-    int start_h = 36;
-    if( !((w-250 < x)&&(x < w-(250-start_w))) )
+    int start_w = 110;
+    int start_h = 50;
+    if( !((30 < x)&&(x < 30 + start_w)) )
         return false;
-    if((h/2 - 40 < y)&&(y < h/2 - 40 + start_h))
+    if((h/4*3 + 120 < y)&&(y < h/4*3+120+start_h))
         return true;
     return false;
 }
 
 bool mouse_over_options(int x, int y, int w, int h)
 {
-    int options_w = 98;
-    int options_h = 24;
-    if( !((w-250 < x)&&(x < w-(250-options_w))) )
+    int options_w = 205;
+    int options_h = 50;
+    if( !((30 < x)&&(x < 30 + options_w))) 
         return false;
-    if((h/2 - 40 < y)&&(y < h/2 + options_h))
+    if((h/4*3 + 75< y)&&(y < h/4*3+75+options_h))
         return true;
     return false;
 }
 
 bool mouse_over_new(int x, int y, int w, int h)
 {
-    int quit_w = 53;
-    int quit_h = 24;
-    if( !((w-250 < x)&&(x < w-(250-quit_w))) )
+    int quit_w = 385;
+    //int quit_h = 75;
+    if( !((30 < x)&&(x < 30 + quit_w))) 
         return false;
-    if((h/2 - 40 < y)&&(y < h/2 + 30 + quit_h))
+    if((h/4*3 - 40 < y)&&(y < h/4*3 + 25))
         return true;
     return false;
 }
 
 bool mouse_over_continue(int x, int y, int w, int h)
 {
-    int quit_w = 53;
-    int quit_h = 24;
-    if( !((w-250 < x)&&(x < w-(250-quit_w))) )
+    int quit_w = 241;
+    int quit_h = 50;
+    if( !((30 < x)&&(x < 30 + quit_w)) )
         return false;
-    if((h/2 - 40 < y)&&(y < h/2 + 30 + quit_h))
+    if((h/4 * 3 +30 < y)&&(y < h/4*3 + 30 + quit_h))
         return true;
     return false;
 }
@@ -224,12 +224,12 @@ void present_main_options
     (SDL_Renderer *r, SDL_Texture * start, SDL_Texture * cont, 
     SDL_Texture * options, SDL_Texture * quit, int w, int h)
 {
-    int start_x = w - 250;
-    int mid_y = h/2;
+    int start_x = 30;
+    int mid_y = h / 4 * 3;
     SDL_Rect box_start = {start_x,mid_y-40};
-    SDL_Rect box_options = {start_x,mid_y};
-    SDL_Rect box_quit = {start_x,mid_y + 30};
-    SDL_Rect box_cont = {start_x, mid_y +60};
+    SDL_Rect box_options = {start_x,mid_y + 75};
+    SDL_Rect box_quit = {start_x,mid_y + 120};
+    SDL_Rect box_cont = {start_x, mid_y + 30};
 
     SDL_QueryTexture(start,NULL,NULL,&box_start.w,&box_start.h);
     SDL_QueryTexture(cont,NULL,NULL,&box_cont.w,&box_cont.h);
@@ -250,7 +250,7 @@ void present_main_options
     SDL_RenderCopy(r, cont, NULL, &box_cont);
 
 
-    /*  Test to find out clickable regions
+    //Test to find out clickable regions
     static int print = 0;
     if(!print)
     {
@@ -260,8 +260,9 @@ void present_main_options
                 box_options.x,box_options.x+box_options.w,box_options.y,box_options.y+box_options.h,box_options.w,box_options.h);
         printf("box_quit: [%d,%d] x [%d,%d] (%d x %d px)\n",
                 box_quit.x,box_quit.x+box_quit.w,box_quit.y,box_quit.y+box_quit.h,box_quit.w,box_quit.h);
+        printf("box_cont: [%d,%d] x [%d,%d] (%d x %d px)\n",
+            box_cont.x,box_cont.x+box_cont.w,box_cont.y,box_cont.y+box_cont.h,box_cont.w,box_cont.h);
         print++;
     }
-    */
+    
 }
-
