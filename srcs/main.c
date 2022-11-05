@@ -15,5 +15,6 @@ int main(int argc, char ** argv)
 
 	//playGame(r);
 
+	gSDL_Close(LEVEL_REND,r,w);
 	return EXIT_SUCCESS;
 }
