@@ -12,14 +12,18 @@ endif
 LIB_DIR=libs
 SRC_DIR=srcs
 OBJ_DIR=build
+OUT_DIR=bin
 
 LIBS=$(wildcard $(LIB_DIR)/*.h)
 SRCS=$(wildcard $(SRC_DIR)/*.c)
 OBJ_A=$(SRCS:%.c=%.o)
 OBJS=$(OBJ_A:$(SRC_DIR)%=$(OBJ_DIR)%)
 
-$(NAME): $(OBJS)
+$(OUT_DIR)/$(NAME): $(OBJS) | $(OUT_DIR)
 	$(CC) -o $@ $^ $(CFLAGS)
+
+$(OUT_DIR):
+	mkdir bin
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(LIBS) | $(OBJ_DIR)
 	$(CC) -o $@ -c $< $(CFLAGS)
@@ -31,4 +35,4 @@ $(OBJ_DIR):
 
 clean:
 	$(RM) -r $(OBJ_DIR)
-	$(RM) $(NAME)
+	$(RM) $(OUT_DIR)/$(NAME)
