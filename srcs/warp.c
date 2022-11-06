@@ -17,6 +17,7 @@ int warp(SDL_Renderer *r, int ww, int wh)
 		case WARP_SAVE_AND_QUIT:
 			break;
 		case WARP_MAP:
+			break;
 		case WARP_CONTINUE:
 			playWarpAnim_2(r,ww,wh);
 			break;
@@ -117,7 +118,18 @@ int tunnelLoop(SDL_Renderer *r, int ww, int wh)
 			{
 				case SDL_QUIT:
 					selection = WARP_SAVE_AND_QUIT;
+					return selection;
 					break;
+				case SDL_KEYDOWN:
+					switch(event.key.keysym.scancode)
+					{
+						case SDL_SCANCODE_ESCAPE:
+							selection = WARP_SAVE_AND_QUIT;
+							return selection;
+							break;
+						default:
+							break;
+					}
 				default:
 					break;
 			}
@@ -127,9 +139,9 @@ int tunnelLoop(SDL_Renderer *r, int ww, int wh)
 		selection = warpEvaluateClicks(&hover,ww,wh,rectArray);
 
 		SDL_RenderClear(r);
-		SDL_RenderCopy(r,textArray[0][(bool)hover&WARP_MASK_CONTINUE],NULL,&rectArray[0]);
-		SDL_RenderCopy(r,textArray[2][(bool)hover&WARP_MASK_SAVEQUIT],NULL,&rectArray[2]);
-		renderTunnelOptions(r,ww,wh);
+		SDL_RenderCopy(r,textArray[0][(bool)(hover&WARP_MASK_CONTINUE)],NULL,&rectArray[0]);
+		SDL_RenderCopy(r,textArray[2][(bool)(hover&WARP_MASK_SAVEQUIT)],NULL,&rectArray[2]);
+		//renderTunnelOptions(r,ww,wh);
 		SDL_RenderPresent(r);
 	}
 	return selection;
@@ -181,7 +193,9 @@ int warpEvaluateClicks(Uint32 *hover, int ww, int wh, SDL_Rect arr[3])
 	bool leftClickUp;//	Left click was released since last call
 	bool leftClickDown = false;//	Left click is currently held down
 	if( (buttonOld & SDL_BUTTON(SDL_BUTTON_LEFT)) && !(button & SDL_BUTTON(SDL_BUTTON_LEFT)) )
+	{
 		leftClickUp = true;
+	}
 	leftClickDown = button & SDL_BUTTON(SDL_BUTTON_LEFT);
 
 	if(isMouseOverRect(x,y,arr[0]))

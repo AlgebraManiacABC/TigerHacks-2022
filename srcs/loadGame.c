@@ -34,7 +34,8 @@ void startNewGame(SDL_Window *w, SDL_Renderer *r)
 	{
 		int ww,wh;
 		SDL_GetWindowSize(w,&ww,&wh);
-		warp(r,ww,wh);
+		if(warp(r,ww,wh)==WARP_SAVE_AND_QUIT)
+			break;
 	}
 	SDL_DestroyTexture(img.tx);
 }
