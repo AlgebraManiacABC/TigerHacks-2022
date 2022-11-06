@@ -68,7 +68,42 @@ int tunnelLoop(SDL_Renderer *r, int ww, int wh)
 		return WARP_SAVE_AND_QUIT;
 	}
 
-	SDL_Color selectColor;
+	SDL_Color selectColor[]=
+	{
+		{255,255,25,255},	//	Yellow
+		{255,255,255,255}	//	White
+	};
+
+	SDL_Texture *** textArray = malloc(sizeof(SDL_Texture **) * 2);
+
+	char warpOptions[][16]=
+	{
+		"CONTINUE",
+		"MAP",
+		"QUIT"
+	};
+
+	SDL_Rect rectArray[3]=
+	{
+		{0,0,0,0},
+		{0,0,0,0},
+		{0,0,0,0}
+	};
+
+	for(int i=0; i<3; i++)
+	{
+		textArray[i] = malloc(sizeof(SDL_Texture *));
+		textArray[i][false] = CreateSolidTextureFromText(r,font,warpOptions[i],selectColor[false]);
+		textArray[i][true] = CreateSolidTextureFromText(r,font,warpOptions[i],selectColor[true]);
+		SDL_QueryTexture(textArray[i][false],NULL,NULL,&rectArray[i].w,&rectArray[i].h);
+	}
+
+	rectArray[0].x = 50;
+	rectArray[0].y = 50;
+	rectArray[2].x = 200;
+	rectArray[2].y = 200;
+
+	TTF_CloseFont(font);
 
 	int selection = WARP_NONE;
 	while(selection == WARP_NONE)
@@ -89,7 +124,7 @@ int tunnelLoop(SDL_Renderer *r, int ww, int wh)
 		}
 
 		Uint32 hover;
-		selection = warpEvaluateClicks(&hover,ww,wh);
+		selection = warpEvaluateClicks(&hover,ww,wh,rectArray);
 
 		SDL_RenderClear(r);
 		renderTunnelOptions(r,ww,wh);
@@ -132,7 +167,7 @@ void renderTunnelOptions(SDL_Renderer *r, int ww, int wh)
 {
 }
 
-int warpEvaluateClicks(Uint32 *hover, int ww, int wh)
+int warpEvaluateClicks(Uint32 *hover, int ww, int wh, SDL_Rect arr[3])
 {
 	static Uint32 clickHeld = 0;
 	int selection = WARP_NONE;
@@ -146,8 +181,8 @@ int warpEvaluateClicks(Uint32 *hover, int ww, int wh)
 	if( (buttonOld & SDL_BUTTON(SDL_BUTTON_LEFT)) && !(button & SDL_BUTTON(SDL_BUTTON_LEFT)) )
 		leftClickUp = true;
 	leftClickDown = button & SDL_BUTTON(SDL_BUTTON_LEFT);
-/*	
-	if(warpMouseOverContinue(x,y,ww,wh))
+
+	if(isMouseOverRect(x,y,arr[0]))
 	{
 		*hover = WARP_MASK_CONTINUE;
 		if(leftClickDown)
@@ -155,15 +190,7 @@ int warpEvaluateClicks(Uint32 *hover, int ww, int wh)
 		else if(leftClickUp && (clickHeld & WARP_MASK_CONTINUE))
 			selection = WARP_CONTINUE;
 	}
-	else if(warpMouseOverMap(x,y,ww,wh))
-	{
-		*hover = WARP_MASK_MAP;
-		if(leftClickDown)
-			clickHeld = WARP_MASK_MAP;
-		else if(leftClickUp && (clickHeld & WARP_MASK_MAP))
-			selection = WARP_MAP;
-	}
-	else if(warpMouseOverSaveQuit(x,y,ww,wh))
+	else if(isMouseOverRect(x,y,arr[2]))
 	{
 		*hover = WARP_MASK_SAVEQUIT;
 		if(leftClickDown)
@@ -171,6 +198,6 @@ int warpEvaluateClicks(Uint32 *hover, int ww, int wh)
 		else if(leftClickUp && (clickHeld & WARP_MASK_SAVEQUIT))
 			selection = WARP_SAVE_AND_QUIT;
 	}
-*/
+
 	return selection;
 }
