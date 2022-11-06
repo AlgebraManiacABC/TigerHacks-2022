@@ -1,4 +1,5 @@
 #include "main.h"
+#include "assets.h"
 
 #define STATE_MAIN      0
 #define STATE_START     1
@@ -11,7 +12,7 @@
 #define MAIN_MENU_COUNT 4
 
 /**
- * @brief Summons the main menu.
+ * Summons the main menu.
  * Options:
  * * New Game (launches game loop)
  * * Continue Game (goes to saves screen)
@@ -21,10 +22,10 @@
  * @param r the SDL_Renderer
  * @return a value corresponding to the chosen option
 */
-int summon_main_menu(SDL_Window *w, SDL_Renderer *r);
+int mainMenu(SDL_Window *w, SDL_Renderer *r);
 
 /**
- * @brief determines what main menu buttons are pressed
+ * determines what main menu buttons are pressed
  * 
  * @param hover a pointer to a bitmask that will be updated
  * to show what is being hovered over
@@ -33,19 +34,19 @@ int summon_main_menu(SDL_Window *w, SDL_Renderer *r);
 int evaluateClicks(Uint32 * hover, int state, bool click_up, bool click_down, int w, int h);
 
 /**
- * @brief Functions that tell if the mouse is hovering over the button
+ * Functions that tell if the mouse is hovering over the button
  * 
  * @param x mouse x
  * @param y mouse y
  * @return true if it's hovering over the button, false if not
  */
-bool mouse_over_new(int x, int y, int w, int h);
-bool mouse_over_continue(int x, int y, int w, int h);
-bool mouse_over_options(int x, int y, int w, int h);
-bool mouse_over_quit(int x, int y, int w, int h);
+bool mouseOverNew(int x, int y, int w, int h);
+bool mouseOverContinue(int x, int y, int w, int h);
+bool mouseOverOptions(int x, int y, int w, int h);
+bool mouseOverQuit(int x, int y, int w, int h);
 
 /**
- * @brief Places the main menu option text on the screen.
+ * Places the main menu option text on the screen.
  * 
  * @param r the SDL_Renderer
  * @param start the START text texture (selected or deselected)
@@ -53,5 +54,5 @@ bool mouse_over_quit(int x, int y, int w, int h);
  * @param quit the QUIT text texture (selected or deselected)
  *
  */
-void present_main_options(SDL_Renderer *r, SDL_Texture * start, SDL_Texture * cont,
+void renderMainOptions(SDL_Renderer *r, SDL_Texture * start, SDL_Texture * cont,
     SDL_Texture * options, SDL_Texture * quit, int w, int h);

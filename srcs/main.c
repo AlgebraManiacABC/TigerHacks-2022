@@ -3,6 +3,7 @@
 #include "warp.h"
 #include "menu.h"
 #include "newGame.h"
+#include "assets.h"
 
 int main(int argc, char ** argv)
 {
@@ -25,7 +26,7 @@ int main(int argc, char ** argv)
 
 	SDL_RenderClear(r);
     SDL_RenderPresent(r);
-    int next = summon_main_menu(w,r);
+    int next = mainMenu(w,r);
     switch(next)
     {
         case MAIN_MENU_ERROR:

@@ -1,41 +1,30 @@
 #include "menu.h"
+#include "main.h"
+#include "assets.h"
 
-int summon_main_menu(SDL_Window *w, SDL_Renderer *r)
+int mainMenu(SDL_Window *w, SDL_Renderer *r)
 {
-    int *width = malloc(sizeof(int)); 
-    int *height = malloc(sizeof(int));
-    SDL_GetWindowSize(w, width, height);
+    int ww,wh;
+    SDL_GetWindowSize(w, &ww, &wh);
 
-    SDL_Texture * menu_bg_img = NULL;
-    SDL_Surface * temp = IMG_Load(MENU_BG);
-    if (!temp)
+    gIMG menu_bg = CreateImgFromFile(r,MENU_BG);
+    if(!menu_bg.tx)
     {
-        fprintf(stderr, "Surface creation failure: %s\n", SDL_GetError());
+        fprintf(stderr, "Error creating image! [%s]\n", SDL_GetError());
         return MAIN_MENU_ERROR;
     }
-    
-    menu_bg_img = SDL_CreateTextureFromSurface(r, temp);
-    if (!menu_bg_img)
-    {
-        fprintf(stderr, "Texture creation failure: %s\n", SDL_GetError());
-        return MAIN_MENU_ERROR;
-    }
-    SDL_FreeSurface(temp);
-
-    SDL_Rect menu_bg = {0, 0, 0, 0};
-    SDL_QueryTexture(menu_bg_img, NULL, NULL, &menu_bg.w, &menu_bg.h);
 
     TTF_Font *font72 = TTF_OpenFont(MENUFONT, 150);
     if(!font72)
     {
-        fprintf(stderr,"Font creation failure: %s\n",SDL_GetError());
+        fprintf(stderr,"Font creation failure! [%s]\n",SDL_GetError());
         return MAIN_MENU_ERROR;
     }
 
     SDL_Color color_select[] =
     {
-        {255, 225, 25},
-        {255, 255, 255}
+        {255, 225, 25}, //  Yellow
+        {255, 255, 255} //  White
     };
 
     SDL_Texture *** txt_menu = malloc(sizeof(SDL_Texture **) * MAIN_MENU_COUNT);
@@ -89,25 +78,23 @@ int summon_main_menu(SDL_Window *w, SDL_Renderer *r)
             }
         }
 
-        if (selection == MAIN_MENU_QUIT) break;
+        if (selection == MAIN_MENU_QUIT)
+            break;
 
         Uint32 hover;
-
-        selection = evaluateClicks(&hover, state, click_up, click_down, *width, *height);
+        selection = evaluateClicks(&hover, state, click_up, click_down, ww, wh);
         
         if (selection == START_NEW)
             state = STATE_START;
 
-        
-
         SDL_RenderClear(r);
-        SDL_RenderCopy(r,menu_bg_img,NULL,&menu_bg);
+        gIMG_RenderCopy(r,&menu_bg);
         if(state == STATE_MAIN)
-            present_main_options(r,
+            renderMainOptions(r,
                 txt_menu[START_NEW][(bool)(hover&MASK_NEW)],
                 txt_menu[START_CONTINUE][(bool)(hover&MASK_CONTINUE)],
                 txt_menu[MAIN_MENU_OPTIONS][(bool)(hover&MASK_OPTIONS)],
-                txt_menu[MAIN_MENU_QUIT][(bool)(hover&MASK_QUIT)], *width, *height);
+                txt_menu[MAIN_MENU_QUIT][(bool)(hover&MASK_QUIT)], ww, wh);
 
         SDL_RenderPresent (r);        
     }
@@ -120,8 +107,6 @@ int summon_main_menu(SDL_Window *w, SDL_Renderer *r)
     }
     free(txt_menu);
     //Free audio
-    free(width);
-    free(height);
 
     return selection;
 }
@@ -136,7 +121,7 @@ int evaluateClicks(Uint32 * hover, int state, bool click_up, bool click_down, in
     
     if(state == STATE_MAIN)
     {
-        if(mouse_over_new(x,y, w, h) == true)
+        if(mouseOverNew(x,y, w, h) == true)
         {
             *hover = MASK_NEW;
             if(click_down)
@@ -144,7 +129,7 @@ int evaluateClicks(Uint32 * hover, int state, bool click_up, bool click_down, in
             if(click_up && (click_held&MASK_NEW))
                 selection = START_NEW;
         }
-        else if (mouse_over_continue(x,y, w, h))
+        else if (mouseOverContinue(x,y, w, h))
         {
             *hover = MASK_CONTINUE;
             if(click_down)
@@ -152,7 +137,7 @@ int evaluateClicks(Uint32 * hover, int state, bool click_up, bool click_down, in
             if(click_up && (click_held&MASK_CONTINUE))
                 selection = START_CONTINUE;
         }
-        else if(mouse_over_options(x,y, w, h))
+        else if(mouseOverOptions(x,y, w, h))
         {
             *hover = MASK_OPTIONS;
             if(click_down)
@@ -160,7 +145,7 @@ int evaluateClicks(Uint32 * hover, int state, bool click_up, bool click_down, in
             if(click_up && (click_held&MASK_OPTIONS))
                 selection = MAIN_MENU_ERROR;
         }
-        else if(mouse_over_quit(x,y, w, h))
+        else if(mouseOverQuit(x,y, w, h))
         {
             *hover = MASK_QUIT;
             if(click_down)
@@ -176,7 +161,7 @@ int evaluateClicks(Uint32 * hover, int state, bool click_up, bool click_down, in
     return selection;
 }
 
-bool mouse_over_quit(int x, int y, int w, int h)
+bool mouseOverQuit(int x, int y, int w, int h)
 {
     int start_w = 110;
     int start_h = 50;
@@ -187,7 +172,7 @@ bool mouse_over_quit(int x, int y, int w, int h)
     return false;
 }
 
-bool mouse_over_options(int x, int y, int w, int h)
+bool mouseOverOptions(int x, int y, int w, int h)
 {
     int options_w = 205;
     int options_h = 50;
@@ -198,7 +183,7 @@ bool mouse_over_options(int x, int y, int w, int h)
     return false;
 }
 
-bool mouse_over_new(int x, int y, int w, int h)
+bool mouseOverNew(int x, int y, int w, int h)
 {
     int quit_w = 385;
     //int quit_h = 75;
@@ -209,7 +194,7 @@ bool mouse_over_new(int x, int y, int w, int h)
     return false;
 }
 
-bool mouse_over_continue(int x, int y, int w, int h)
+bool mouseOverContinue(int x, int y, int w, int h)
 {
     int quit_w = 241;
     int quit_h = 50;
@@ -220,7 +205,7 @@ bool mouse_over_continue(int x, int y, int w, int h)
     return false;
 }
 
-void present_main_options
+void renderMainOptions
     (SDL_Renderer *r, SDL_Texture * start, SDL_Texture * cont, 
     SDL_Texture * options, SDL_Texture * quit, int w, int h)
 {

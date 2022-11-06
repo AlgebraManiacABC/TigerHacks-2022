@@ -4,7 +4,6 @@
 #include <sys/time.h>
 #include <math.h>
 #include <string.h>
-#include "assets.h"
 
 #define MAIN_MENU_ERROR    -1
 #define START_NEW           0
