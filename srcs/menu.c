@@ -14,7 +14,7 @@ int mainMenu(SDL_Window *w, SDL_Renderer *r)
         return MAIN_MENU_ERROR;
     }
 
-    TTF_Font *font72 = TTF_OpenFont(MENUFONT, 150);
+    TTF_Font *font72 = TTF_OpenFont(ROBOTO, 150);
     if(!font72)
     {
         fprintf(stderr,"Font creation failure! [%s]\n",SDL_GetError());
