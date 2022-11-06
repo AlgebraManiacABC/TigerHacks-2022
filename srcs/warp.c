@@ -15,6 +15,7 @@ int warp(SDL_Renderer *r, int ww, int wh)
 	switch(choice)
 	{
 		case WARP_SAVE_AND_QUIT:
+			break;
 		case WARP_MAP:
 		case WARP_CONTINUE:
 			playWarpAnim_2(r,ww,wh);
@@ -60,7 +61,41 @@ void playWarpAnim_1(SDL_Renderer *r, int ww, int wh)
 
 int tunnelLoop(SDL_Renderer *r, int ww, int wh)
 {
-	return WARP_CONTINUE;
+	TTF_Font * font = TTF_OpenFont(MENUFONT,144);
+	if(!font)
+	{
+		fprintf(stderr,"Font error! [%s]\n",TTF_GetError());
+		return WARP_SAVE_AND_QUIT;
+	}
+
+	SDL_Color selectColor;
+
+	int selection = WARP_NONE;
+	while(selection == WARP_NONE)
+	{
+		bool clickDown = false;
+		bool clickUp = false;
+		SDL_Event event;
+		while(SDL_PollEvent(&event))
+		{
+			switch(event.type)
+			{
+				case SDL_QUIT:
+					selection = WARP_SAVE_AND_QUIT;
+					break;
+				default:
+					break;
+			}
+		}
+
+		Uint32 hover;
+		selection = warpEvaluateClicks(&hover,ww,wh);
+
+		SDL_RenderClear(r);
+		renderTunnelOptions(r,ww,wh);
+		SDL_RenderPresent(r);
+	}
+	return selection;
 }
 
 void playWarpAnim_2(SDL_Renderer *r, int ww, int wh)
@@ -91,4 +126,51 @@ void playWarpAnim_2(SDL_Renderer *r, int ww, int wh)
 		SDL_DestroyTexture(anim.tx);
 		SDL_Delay(2000 / FPS);
 	}
+}
+
+void renderTunnelOptions(SDL_Renderer *r, int ww, int wh)
+{
+}
+
+int warpEvaluateClicks(Uint32 *hover, int ww, int wh)
+{
+	static Uint32 clickHeld = 0;
+	int selection = WARP_NONE;
+
+	int x,y;
+	static Uint32 button;
+	Uint32 buttonOld = button;
+	button = SDL_GetMouseState(&x,&y);
+	bool leftClickUp;//	Left click was released since last call
+	bool leftClickDown = false;//	Left click is currently held down
+	if( (buttonOld & SDL_BUTTON(SDL_BUTTON_LEFT)) && !(button & SDL_BUTTON(SDL_BUTTON_LEFT)) )
+		leftClickUp = true;
+	leftClickDown = button & SDL_BUTTON(SDL_BUTTON_LEFT);
+/*	
+	if(warpMouseOverContinue(x,y,ww,wh))
+	{
+		*hover = WARP_MASK_CONTINUE;
+		if(leftClickDown)
+			clickHeld = WARP_MASK_CONTINUE;
+		else if(leftClickUp && (clickHeld & WARP_MASK_CONTINUE))
+			selection = WARP_CONTINUE;
+	}
+	else if(warpMouseOverMap(x,y,ww,wh))
+	{
+		*hover = WARP_MASK_MAP;
+		if(leftClickDown)
+			clickHeld = WARP_MASK_MAP;
+		else if(leftClickUp && (clickHeld & WARP_MASK_MAP))
+			selection = WARP_MAP;
+	}
+	else if(warpMouseOverSaveQuit(x,y,ww,wh))
+	{
+		*hover = WARP_MASK_SAVEQUIT;
+		if(leftClickDown)
+			clickHeld = WARP_MASK_SAVEQUIT;
+		else if(leftClickUp && (clickHeld & WARP_MASK_SAVEQUIT))
+			selection = WARP_SAVE_AND_QUIT;
+	}
+*/
+	return selection;
 }

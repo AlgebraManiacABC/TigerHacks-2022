@@ -10,9 +10,9 @@ int survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship)
 
 	TTF_Font *font = TTF_OpenFont(ROBOTO,72);
 
-	outerSpace space;
-	initDebrisArray(space.junk);
-	initEnemyArray(space.enemies);
+	outerSpace space = malloc(sizeof(_outerSpace));
+	initDebrisArray(space->junk);
+	initEnemyArray(space->enemies);
 
 	int ww,wh;
 	SDL_GetWindowSize(w,&ww,&wh);
@@ -20,7 +20,7 @@ int survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship)
 	if(!bg.tx)
 	{
 		fprintf(stderr,"Error creating image! [%s]\n",SDL_GetError());
-		return EXIT_FAILURE;
+		return SURVIVAL_ERROR;
 	}
 	gIMG_Resize(&bg,ww,wh);
 
@@ -29,12 +29,15 @@ int survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship)
 	ship.y = wh/2;
 	ship.vx = 0;
 	ship.vy = 0;
+	ship.invincible = 0;
+	ship.damage = 0;
 
 	bool survive = true;
 	SDL_Event event;
 	bool accelerating = false;
 	bool rotating_left = false;
 	bool rotating_right = false;
+	int frame = DEFAULT_FRAME;
 	while(survive)
 	{
 		while(SDL_PollEvent(&event))
@@ -42,7 +45,7 @@ int survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship)
 			switch(event.type)
 			{
 				case SDL_QUIT:
-					return EXIT_SUCCESS;
+					return SURVIVAL_QUIT;
 				case SDL_WINDOWEVENT:
 					switch(event.window.event)
 					{
@@ -56,12 +59,15 @@ int survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship)
 					switch(event.key.keysym.scancode)
 					{
 						case SDL_SCANCODE_W:
+						case SDL_SCANCODE_UP:
 							accelerating = true;
 							break;
 						case SDL_SCANCODE_A:
+						case SDL_SCANCODE_LEFT:
 							rotating_left = true;
 							break;
 						case SDL_SCANCODE_D:
+						case SDL_SCANCODE_RIGHT:
 							rotating_right = true;
 							break;
 						case SDL_SCANCODE_ESCAPE:
@@ -75,12 +81,15 @@ int survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship)
 					switch(event.key.keysym.scancode)
 					{
 						case SDL_SCANCODE_W:
+						case SDL_SCANCODE_UP:
 							accelerating = false;
 							break;
 						case SDL_SCANCODE_A:
+						case SDL_SCANCODE_LEFT:
 							rotating_left = false;
 							break;
 						case SDL_SCANCODE_D:
+						case SDL_SCANCODE_RIGHT:
 							rotating_right = false;
 							break;
 						default:
@@ -101,9 +110,12 @@ int survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship)
 				ship.vx = testvx;
 				ship.vy = testvy;
 			}
+			frame++;
+			frame = (frame%5)+1;
 		}
 		else if(!accelerating)
 		{
+			frame = DEFAULT_FRAME;
 			if(ship.vx > 0)
 				ship.vx -= (sqrt(DECCEL/2))/FPS;
 			if(ship.vx < 0)
@@ -142,11 +154,38 @@ int survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship)
 		if(timeRemaining == 0.0)
 		{
 			//jump to warp
-			return EXIT_SUCCESS;
+			destroyDebris(space->junk);
+			destroyEnemies(space->enemies);
+			initDebrisArray(space->junk);
+			initEnemyArray(space->enemies);
+			SDL_DestroyTexture(bg.tx);
+			return SURVIVAL_NEXT;
 		}
 
-		moveDebris(space.junk,ww,wh);
-		moveEnemies(space.enemies,ww,wh);
+		moveDebris(space->junk,ww,wh);
+		moveEnemies(space->enemies,ww,wh);
+
+		int dmg = 0;
+		if(!ship.invincible)
+			dmg = collide(ship,space);
+		else
+			ship.invincible--;
+
+		if(dmg)
+		{
+			ship.invincible = INVINCIBILITY_FRAMES;
+			ship.damage += dmg;
+			if (ship.damage >= DEFAULT_DURABILITY)
+			{
+				//show death screen
+				destroyDebris(space->junk);
+				destroyEnemies(space->enemies);
+				SDL_DestroyTexture(bg.tx);
+				SDL_DestroyTexture(ship.tx);
+				free(space);
+				return SURVIVAL_DEATH;
+			}
+		}
 
 		//	One in 512 chance per frame to spawn X: if(!(rand()%512))
 		//	One in 512 chance per second to spawn X: if(!(rand()%(512*FPS)))
@@ -155,17 +194,17 @@ int survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship)
 		{
 			int err;
 			if(rand()%2)
-				err = spawnDebris(r,space.junk,ww,wh,ship.x,ship.y,0);
+				err = spawnDebris(r,space->junk,ww,wh,ship.x,ship.y,0);
 			else
-				err = spawnEnemy(r,space.enemies,ww,wh,0);
+				err = spawnEnemy(r,space->enemies,ww,wh,0);
 			switch(err)
 			{
 				case SPAWN_FAIL_MEM:
 					fprintf(stderr,"Memory error!\n");
-					return EXIT_FAILURE;
+					return SURVIVAL_ERROR;
 				case SPAWN_FAIL_IMG:
 					fprintf(stderr,"Error creating image! [%s]\n",SDL_GetError());
-					return EXIT_FAILURE;
+					return SURVIVAL_ERROR;
 				case SPAWN_SUCCESS:
 				case SPAWN_FAIL_PROX:
 				case SPAWN_FAIL_FULL:
@@ -176,14 +215,14 @@ int survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship)
 
 		SDL_RenderClear(r);
 		gIMG_RenderCopy(r,&bg);
-		renderShip(r,ww,wh,ship);
-		renderDebris(r,space.junk,ww,wh);
+		renderShip(r,ww,wh,ship,frame);
+		renderDebris(r,space->junk,ww,wh);
 		renderCooldown(r, ww, wh, timeRemaining, font);
 		SDL_RenderPresent(r);
 
 		SDL_Delay(1000 / FPS);
 	}
-	return EXIT_FAILURE;
+	return SURVIVAL_ERROR;
 }
 
 void initDebrisArray(debris * junk[MAX_DEBRIS])
@@ -261,7 +300,7 @@ int spawnDebris(SDL_Renderer *r, debris * junk[MAX_DEBRIS], int ww, int wh, int 
 			else
 				junk[i]->y = wh/2;
 		}
-		if(sqrt(pow(shipx-junk[i]->x,2)+pow(shipy-junk[i]->y,2)) < MIN_SHIP_DIST)
+		if(distance(shipx,shipy,junk[i]->x,junk[i]->y) < MIN_SHIP_DIST)
 		{
 			free(junk[i]);
 			return SPAWN_FAIL_PROX;
@@ -280,19 +319,19 @@ int spawnDebris(SDL_Renderer *r, debris * junk[MAX_DEBRIS], int ww, int wh, int 
 		junk[i]->img.rect.x = junk[i]->x;
 		junk[i]->img.rect.y = junk[i]->y;
 
-		struct timeval now;
-		gettimeofday(&now,NULL);
-		junk[i]->spawntime = now.tv_usec + (1000*1000*now.tv_sec);
+		struct timespec now;
+		clock_gettime(CLOCK_REALTIME,&now);
+		junk[i]->spawntime = now.tv_nsec + (1000*1000*1000*now.tv_sec);
 		//	Time it would take for the entire width of the rect to be within the window
 		//	i.e., time for x pos to move right 2*radius
 		//	v = d/t -> t = d/v
 		if(junk[i]->vx)
-			junk[i]->incoming_x = fabs(2*1000*1000*(((double)junk[i]->img.rect.w)/(double)(junk[i]->vx)));
+			junk[i]->incoming_x = fabs(2*1000*1000*1000*(((double)junk[i]->img.rect.w)/(double)(junk[i]->vx)));
 		else
 			junk[i]->incoming_x = 0;
 
 		if(junk[i]->vy)
-			junk[i]->incoming_y = fabs(2*1000*1000*(((double)junk[i]->img.rect.h)/(double)(junk[i]->vy)));
+			junk[i]->incoming_y = fabs(2*1000*1000*1000*(((double)junk[i]->img.rect.h)/(double)(junk[i]->vy)));
 		else
 			junk[i]->incoming_y = 0;
 	}
@@ -311,24 +350,49 @@ int spawnEnemy(SDL_Renderer *r, enemy * enemies[MAX_ENEMIES], int ww, int wh, in
 	return EXIT_FAILURE;
 }
 
-bool isCollision(spaceShip ship, outerSpace env)
+double distance(float Ax, float Ay, float Bx, float By)
 {
-	return false;
+	return sqrt( pow(Ax-Bx,2) + pow(Ay-By,2) );
+}
+
+int collide(spaceShip ship, outerSpace env)
+{
+	int damage = 0;
+
+	for(int i=0; i<MAX_DEBRIS; i++)
+	{
+		if(env->junk[i])
+		{
+			int radius = env->junk[i]->size==SMALL_DEBRIS_ID?SMALL_DEBRIS_RADIUS:LARGE_DEBRIS_RADIUS;
+			if(distance(ship.x,ship.y,env->junk[i]->x,env->junk[i]->y) < radius)
+			{
+				printf("Collided, removing.\n");
+				damage += (env->junk[i]->size==SMALL_DEBRIS_ID?DAMAGE_SMALL_DEBRIS:DAMAGE_LARGE_DEBRIS);
+				if(env->junk[i]->img.tx)
+					SDL_DestroyTexture(env->junk[i]->img.tx);
+				free(env->junk[i]);
+				env->junk[i] = NULL;
+				printf("Collided and removed object!\n");
+			}
+		}
+	}
+
+	return damage;
 }
 
 void moveDebris(debris * junk[MAX_DEBRIS], int ww, int wh)
 {
-	struct timeval now;
-	gettimeofday(&now,NULL);
+	struct timespec now;
+	clock_gettime(CLOCK_REALTIME,&now);
 	for(int i=0; i<MAX_DEBRIS; i++)
 	{
 		if(junk[i])
 		{
 			if(junk[i]->incoming_x &&
-					((now.tv_sec*1000*1000 + now.tv_usec) - (junk[i]->spawntime) > junk[i]->incoming_x))
+					((now.tv_sec*1000*1000*1000 + now.tv_nsec) - (junk[i]->spawntime) > junk[i]->incoming_x))
 				junk[i]->incoming_x = 0;
 			if(junk[i]->incoming_y &&
-					((now.tv_sec*1000*1000 + now.tv_usec) - (junk[i]->spawntime) > junk[i]->incoming_y))
+					((now.tv_sec*1000*1000*1000 + now.tv_nsec) - (junk[i]->spawntime) > junk[i]->incoming_y))
 				junk[i]->incoming_y = 0;
 			junk[i]->rotation += (junk[i]->vx)/FPS;
 			junk[i]->x += (junk[i]->vx)/FPS;
@@ -380,10 +444,33 @@ void moveEnemies(enemy * enemies[MAX_ENEMIES], int ww, int wh)
 	}
 }
 
+void destroyDebris(debris * junk[MAX_DEBRIS])
+{
+	for(int i=0; i<MAX_DEBRIS; i++)
+	{
+		if(junk[i])
+		{
+			if(junk[i]->img.tx)
+				SDL_DestroyTexture(junk[i]->img.tx);
+			free(junk[i]);
+			junk[i] = NULL;
+		}
+	}
+}
+
+void destroyEnemies(enemy * enemies[MAX_ENEMIES])
+{
+}
+
 //	Render functions
 
-void renderShip(SDL_Renderer *r, int ww, int wh, spaceShip ship)
+void renderShip(SDL_Renderer *r, int ww, int wh, spaceShip ship, int frame)
 {
+	SDL_Rect clipped = {0,0,0,0};
+	SDL_QueryTexture(ship.tx,NULL,NULL,&clipped.w,&clipped.h);
+	clipped.w /= 5;
+	clipped.x = (frame-1) * clipped.w;
+
 	SDL_Rect imgLeft = ship.rect;
 	SDL_Rect imgRight = ship.rect;
 	SDL_Rect imgUp = ship.rect;
@@ -398,18 +485,18 @@ void renderShip(SDL_Renderer *r, int ww, int wh, spaceShip ship)
 	imgDown.x = ship.rect.x;
 	imgDown.y = ship.rect.y + wh;
 
-	SDL_RenderCopyEx(r,ship.tx,NULL,&ship.rect,ship.rotation+90,NULL,SDL_FLIP_NONE);
-	SDL_RenderCopyEx(r,ship.tx,NULL,&imgLeft,ship.rotation+90,NULL,SDL_FLIP_NONE);
-	SDL_RenderCopyEx(r,ship.tx,NULL,&imgRight,ship.rotation+90,NULL,SDL_FLIP_NONE);
-	SDL_RenderCopyEx(r,ship.tx,NULL,&imgUp,ship.rotation+90,NULL,SDL_FLIP_NONE);
-	SDL_RenderCopyEx(r,ship.tx,NULL,&imgDown,ship.rotation+90,NULL,SDL_FLIP_NONE);
+	SDL_RenderCopyEx(r,ship.tx,&clipped,&ship.rect,ship.rotation+90,NULL,SDL_FLIP_NONE);
+	SDL_RenderCopyEx(r,ship.tx,&clipped,&imgLeft,ship.rotation+90,NULL,SDL_FLIP_NONE);
+	SDL_RenderCopyEx(r,ship.tx,&clipped,&imgRight,ship.rotation+90,NULL,SDL_FLIP_NONE);
+	SDL_RenderCopyEx(r,ship.tx,&clipped,&imgUp,ship.rotation+90,NULL,SDL_FLIP_NONE);
+	SDL_RenderCopyEx(r,ship.tx,&clipped,&imgDown,ship.rotation+90,NULL,SDL_FLIP_NONE);
 }
 
 void renderDebris(SDL_Renderer *r, debris * junk[MAX_DEBRIS], int ww, int wh)
 {
 	for(int i=0; i<MAX_DEBRIS; i++)
 	{
-		if(junk[i])
+		if(junk[i] && junk[i]->img.tx)
 		{
 			SDL_Rect temp = junk[i]->img.rect;
 			SDL_RenderCopyEx(r,junk[i]->img.tx,NULL,&(temp),junk[i]->rotation,NULL,SDL_FLIP_NONE);

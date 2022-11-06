@@ -25,5 +25,9 @@ static const char * debrisFiles[]=
 #define WARP_END_BASE "imgs/warp_animation/Warp_End_"
 #define NUM_WARP_END 18
 
+#define SHIP_ID_BASE "imgs/ship_"
+#define NUM_SHIP_TYPES 1
+#define DEFAULT_SHIP_ID 1
+
 #define MENUFONT "fonts/Dink/Dink-vKXE.ttf"
 #define ROBOTO "fonts/Roboto/Roboto.ttf"

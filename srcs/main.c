@@ -2,7 +2,7 @@
 #include "survival.h"
 #include "warp.h"
 #include "menu.h"
-#include "newGame.h"
+#include "loadGame.h"
 #include "assets.h"
 
 int main(int argc, char ** argv)
@@ -34,11 +34,11 @@ int main(int argc, char ** argv)
             break;
         case START_NEW:
 			//	Show "lore," then warp (no options)
-			startNewGame(r);
+			startNewGame(w,r);
             break;
         case START_CONTINUE:
 			//	Read save, then continue from warp
-			//spaceShip ship = readSave();
+			loadGame(w,r);
             break;
         case MAIN_MENU_OPTIONS:
 			//	Show options page
@@ -48,24 +48,7 @@ int main(int argc, char ** argv)
             break;
     }
 
-	int ww,wh;
-	SDL_GetWindowSize(w,&ww,&wh);
-	printf("Window size: %d x %d\n",ww,wh);
 	//warp(r,ww,wh);
-	spaceShip ship;
-	gIMG shipIMG = CreateImgFromFile(r,PLAYER);
-	if(!shipIMG.tx)
-	{
-		fprintf(stderr,"Error creating image! [%s]\n",SDL_GetError());
-		return EXIT_FAILURE;
-	}
-	gIMG_Resize(&shipIMG,100,100);
-	ship.tx = shipIMG.tx;
-	ship.rect = shipIMG.rect;
-	ship.accel = 100;
-	ship.vrotate = 100;
-	survivalLoop(w,r,ship);
-	SDL_DestroyTexture(shipIMG.tx);
 
 	gSDL_Close(LEVEL_REND,r,w);
 	TTF_Quit();
