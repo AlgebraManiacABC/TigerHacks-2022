@@ -2,7 +2,7 @@
 #define SURVIVAL_BG "imgs/survival.png"
 #define ENEMY "imgs/enemy.png"
 #define DEBRIS_1 "imgs/steel_beam.png"
-#define PLAYER "imgs/you.png"
+#define PLAYER "imgs/rocket_player.png"
 
 #ifndef DEBRIS
 #define DEBRIS
