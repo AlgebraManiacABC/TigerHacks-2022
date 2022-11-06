@@ -23,7 +23,7 @@ void playWarpAnim_2(SDL_Renderer *r, int ww, int wh);
 
 void renderTunnelOptions(SDL_Renderer *r, int ww, int wh);
 
-int warpEvaluateClicks(Uint32 *hover, int ww, int wh);
+int warpEvaluateClicks(Uint32 *hover, int ww, int wh, SDL_Rect arr[3]);
 
 bool warpMouseOverContinue(int x, int y, int ww, int wh);
 bool warpMouseOverMap(int x, int y, int ww, int wh);
