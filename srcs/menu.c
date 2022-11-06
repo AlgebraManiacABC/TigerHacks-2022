@@ -1,10 +1,13 @@
 #include "menu.h"
 #include "main.h"
 #include "assets.h"
+#include "survival.h"
 
 int mainMenu(SDL_Window *w, SDL_Renderer *r)
 {
     int ww,wh;
+    outerSpace space = malloc(sizeof(_outerSpace));
+    initDebrisArray(space->junk);
     SDL_GetWindowSize(w, &ww, &wh);
 
     gIMG menu_bg = CreateImgFromFile(r,MENU_BG);
@@ -50,6 +53,33 @@ int mainMenu(SDL_Window *w, SDL_Renderer *r)
 
     while (selection == MAIN_MENU_ERROR)
     {
+        moveDebris(space->junk,ww,wh);
+
+		//	One in 512 chance per frame to spawn X: if(!(rand()%512))
+		//	One in 512 chance per second to spawn X: if(!(rand()%(512*FPS)))
+		//	TODO: Change arbitrary chance to scale with difficulty
+		if(!(rand()%((int)FPS*1)))	//	Chance per second to spawn something
+		{
+			int err;
+			if(rand()%2)
+				err = spawnDebris(r,space->junk,ww,wh,0,0,0);
+			switch(err)
+			{
+				case SPAWN_FAIL_MEM:
+					fprintf(stderr,"Memory error!\n");
+					return EXIT_FAILURE;
+				case SPAWN_FAIL_IMG:
+					fprintf(stderr,"Error creating image! [%s]\n",SDL_GetError());
+					return EXIT_FAILURE;
+				case SPAWN_SUCCESS:
+				case SPAWN_FAIL_PROX:
+				case SPAWN_FAIL_FULL:
+				//	Normal behavior
+					break;
+			}
+		}
+
+		SDL_Delay(1000 / FPS);
         bool click_up = false;
         bool click_down = false;
         SDL_Event event;
@@ -89,6 +119,7 @@ int mainMenu(SDL_Window *w, SDL_Renderer *r)
 
         SDL_RenderClear(r);
         gIMG_RenderCopy(r,&menu_bg);
+        renderDebris(r,space->junk,ww,wh);
         if(state == STATE_MAIN)
             renderMainOptions(r,
                 txt_menu[START_NEW][(bool)(hover&MASK_NEW)],
@@ -107,6 +138,7 @@ int mainMenu(SDL_Window *w, SDL_Renderer *r)
     }
     free(txt_menu);
     //Free audio
+    free(space);
 
     return selection;
 }
