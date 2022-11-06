@@ -60,6 +60,8 @@ spaceShip buildShip(SDL_Renderer *r, shipInfo info)
 
 void loadGame(SDL_Window *w, SDL_Renderer *r)
 {
+	startNewGame(w,r);
+	/*
 	FILE *save = fopen(SAVE_LOCATION,"rb");
 	if(!save)
 	{
@@ -67,4 +69,5 @@ void loadGame(SDL_Window *w, SDL_Renderer *r)
 		return;
 	}
 	fclose(save);
+	*/
 }

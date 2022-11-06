@@ -7,7 +7,7 @@
 
 int main(int argc, char ** argv)
 {
-	srand(((long unsigned int)main * time(NULL)));
+	srand(time(NULL));
 	SDL_Window *w;
 	SDL_Renderer *r;
 	if(gSDL_Init(SDL_INIT_EVERYTHING,&w,640,400,SDL_WINDOW_RESIZABLE,
