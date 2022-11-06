@@ -70,6 +70,9 @@ int survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship)
 						case SDL_SCANCODE_RIGHT:
 							rotating_right = true;
 							break;
+						case SDL_SCANCODE_END:
+							goto leap;
+							break;
 						case SDL_SCANCODE_ESCAPE:
 							survive = false;
 							break;
@@ -153,6 +156,7 @@ int survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship)
 		timeRemaining = COOLDOWN_TIME - (time(NULL) - time0);
 		if(timeRemaining == 0.0)
 		{
+			leap:
 			//jump to warp
 			destroyDebris(space->junk);
 			destroyEnemies(space->enemies);
@@ -173,7 +177,7 @@ int survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship)
 
 		if(dmg)
 		{
-			ship.invincible = INVINCIBILITY_FRAMES;
+			ship.invincible = 10000*INVINCIBILITY_FRAMES;
 			ship.damage += dmg;
 			if (ship.damage >= DEFAULT_DURABILITY)
 			{
@@ -183,6 +187,7 @@ int survivalLoop(SDL_Window *w, SDL_Renderer *r, spaceShip ship)
 				SDL_DestroyTexture(bg.tx);
 				SDL_DestroyTexture(ship.tx);
 				free(space);
+				printf("Game over!\n");
 				return SURVIVAL_DEATH;
 			}
 		}
@@ -366,13 +371,11 @@ int collide(spaceShip ship, outerSpace env)
 			int radius = env->junk[i]->size==SMALL_DEBRIS_ID?SMALL_DEBRIS_RADIUS:LARGE_DEBRIS_RADIUS;
 			if(distance(ship.x,ship.y,env->junk[i]->x,env->junk[i]->y) < radius)
 			{
-				printf("Collided, removing.\n");
 				damage += (env->junk[i]->size==SMALL_DEBRIS_ID?DAMAGE_SMALL_DEBRIS:DAMAGE_LARGE_DEBRIS);
 				if(env->junk[i]->img.tx)
 					SDL_DestroyTexture(env->junk[i]->img.tx);
 				free(env->junk[i]);
 				env->junk[i] = NULL;
-				printf("Collided and removed object!\n");
 			}
 		}
 	}

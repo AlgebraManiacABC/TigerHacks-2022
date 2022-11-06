@@ -16,6 +16,7 @@ int mainMenu(SDL_Window *w, SDL_Renderer *r)
         fprintf(stderr, "Error creating image! [%s]\n", SDL_GetError());
         return MAIN_MENU_ERROR;
     }
+    gIMG_Resize(&menu_bg,ww,wh);
 
     TTF_Font *font72 = TTF_OpenFont(ROBOTO, 150);
     if(!font72)

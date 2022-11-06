@@ -98,10 +98,10 @@ int tunnelLoop(SDL_Renderer *r, int ww, int wh)
 		SDL_QueryTexture(textArray[i][false],NULL,NULL,&rectArray[i].w,&rectArray[i].h);
 	}
 
-	rectArray[0].x = 50;
-	rectArray[0].y = 50;
-	rectArray[2].x = 200;
-	rectArray[2].y = 200;
+	rectArray[0].x = 200;
+	rectArray[0].y = 200;
+	rectArray[2].x = 300;
+	rectArray[2].y = 500;
 
 	TTF_CloseFont(font);
 
@@ -127,6 +127,8 @@ int tunnelLoop(SDL_Renderer *r, int ww, int wh)
 		selection = warpEvaluateClicks(&hover,ww,wh,rectArray);
 
 		SDL_RenderClear(r);
+		SDL_RenderCopy(r,textArray[0][(bool)hover&WARP_MASK_CONTINUE],NULL,&rectArray[0]);
+		SDL_RenderCopy(r,textArray[2][(bool)hover&WARP_MASK_SAVEQUIT],NULL,&rectArray[2]);
 		renderTunnelOptions(r,ww,wh);
 		SDL_RenderPresent(r);
 	}
@@ -198,6 +200,8 @@ int warpEvaluateClicks(Uint32 *hover, int ww, int wh, SDL_Rect arr[3])
 		else if(leftClickUp && (clickHeld & WARP_MASK_SAVEQUIT))
 			selection = WARP_SAVE_AND_QUIT;
 	}
+	else
+		*hover = 0;
 
 	return selection;
 }
